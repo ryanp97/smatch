@@ -11,6 +11,8 @@ For detailed description of smatch, see http://www.isi.edu/natural-language/amr/
 from __future__ import print_function
 from __future__ import division
 
+from tqdm import tqdm
+
 import amr
 import os
 import random
@@ -729,6 +731,8 @@ def main(arguments):
     # significant digits to print out
     floatdisplay = "%%.%df" % arguments.significant
     # Read amr pairs from two files
+
+    pbar = tqdm()
     while True:
         cur_amr1 = amr.AMR.get_amr_line(args.f[0])
         cur_amr2 = amr.AMR.get_amr_line(args.f[1])
@@ -761,7 +765,10 @@ def main(arguments):
         # Rename node to "a1", "a2", .etc
         amr1.rename_node(prefix1)
         # Renaming node to "b1", "b2", .etc
-        amr2.rename_node(prefix2)
+        try:
+            amr2.rename_node(prefix2)
+        except:
+            import ipdb; ipdb.set_trace()
         (instance1, attributes1, relation1) = amr1.get_triples()
         (instance2, attributes2, relation2) = amr2.get_triples()
         if verbose:
@@ -816,6 +823,8 @@ def main(arguments):
         # clear the matching triple dictionary for the next AMR pair
         match_triple_dict.clear()
         sent_num += 1
+        pbar.update(1)
+    pbar.close()
     if verbose:
         print("Total match number, total triple number in AMR 1, and total triple number in AMR 2:", file=DEBUG_LOG)
         print(total_match_num, total_test_num, total_gold_num, file=DEBUG_LOG)
